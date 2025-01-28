@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, Personajes, Planetas
+from models import db, Personajes, Planetas, User, Favoritos
 from sqlalchemy import select 
 
 app = Flask(__name__)
@@ -111,7 +111,109 @@ def solo_un_planeta(id):
  except: 
 
     return jsonify({"msg":"planeta not exist"}), 404
+ 
+ 
+#obtener todos los usuarios
+@app.route('/user', methods=['GET'])
+def todos_los_usuarios():
 
+    data = db.session.scalars(select(User)).all()
+    results = list(map(lambda User: User.serialize(),data))
+    
+    
+
+    response_body = {
+        "msg": "Hello, this is your GET /todos los usuarios response ", 
+        "results":results
+    }
+
+    return jsonify(response_body), 200  
+
+#obtener todos los favoritos 
+@app.route('/favoritos', methods=['GET'])
+def todos_los_favoritos():
+
+    data = db.session.scalars(select(Favoritos)).all()
+    results = list(map(lambda Favoritos: Favoritos.serialize(),data))
+    
+
+    response_body = {
+        "msg": "Hello, this is your GET /todos los favoritos ", 
+        "results":results
+    }
+
+    return jsonify(response_body), 200  
+
+#obtener el planeta favorito de un usuario
+@app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
+def añadir_favorito_planeta(planet_id):
+    # request_data = request.json
+    # print(request_data)
+    #¿tiene que ir los datos de la tabla de user? 
+    # metodo para filtrar el usuairo
+    user = User.query.first()
+    new_favorito = Favoritos(user_id=user.id,planeta_id=planet_id)
+    db.session.add(new_favorito)
+    db.session.commit()
+
+    response_body = {
+        "msg":"user created"
+    }
+
+    return jsonify(response_body), 200
+
+
+#obtener el personaje favorito de un usuario
+@app.route('/favorite/people/<int:people_id>', methods=['POST'])
+def añadir_favorito_personaje(people_id):
+    # request_data = request.json
+    # print(request_data)
+    #¿tiene que ir los datos de la tabla de user? 
+    # metodo para filtrar el usuairo
+    user = User.query.first()
+    new_favorito = Favoritos(user_id=user.id,personajes_id=people_id)
+    db.session.add(new_favorito)
+    db.session.commit()
+
+    response_body = {
+        "msg":"personaje favorito agregado"
+    }
+
+    return jsonify(response_body), 200
+
+
+    ##### DELETE planeta favorito
+@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
+def delete_user(planet_id):
+
+    user = db.session.execute(db.select(User).filter_by(id=id)).scalar_one()
+    # hacer filtrado
+    buscar_planetafavorito_borrar = Favoritos(user_id=user.id,planeta_id=planet_id)
+    db.session.delete(buscar_planetafavorito_borrar)
+    db.session.commit()
+
+    response_body = {
+        "msg":"planeta favorito del usuario deleted"
+    }
+
+    return jsonify(response_body), 200
+
+
+##### DELETE personaje favorito
+@app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
+def delete_user(people_id):
+
+    user = db.session.execute(db.select(User).filter_by(id=id)).scalar_one()
+    # hacer filtrado
+    buscar_personajefavorito_borrar = Favoritos(user_id=user.id,personajes_id=people_id)
+    db.session.delete(buscar_personajefavorito_borrar)
+    db.session.commit()
+
+    response_body = {
+        "msg":"planeta favorito del usuario deleted"
+    }
+
+    return jsonify(response_body), 200
  
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
