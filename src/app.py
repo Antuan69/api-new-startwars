@@ -147,17 +147,23 @@ def todos_los_favoritos():
 #obtener el planeta favorito de un usuario
 @app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
 def añadir_favorito_planeta(planet_id):
-    # request_data = request.json
-    # print(request_data)
-    #¿tiene que ir los datos de la tabla de user? 
-    # metodo para filtrar el usuairo
-    user = User.query.first()
+    data = request.get_json()
+    user_id = data.get('user_id')
+
+    if not user_id:
+     return jsonify({"msg": "No User send "}), 404
+
+    user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar()
+    
+    if not user:
+     return jsonify({"error": "Usuario no encontrado"}), 404
+
     new_favorito = Favoritos(user_id=user.id,planeta_id=planet_id)
     db.session.add(new_favorito)
     db.session.commit()
 
     response_body = {
-        "msg":"user created"
+        "msg":"planeta favorito agregado"
     }
 
     return jsonify(response_body), 200
@@ -166,12 +172,19 @@ def añadir_favorito_planeta(planet_id):
 #obtener el personaje favorito de un usuario
 @app.route('/favorite/people/<int:people_id>', methods=['POST'])
 def añadir_favorito_personaje(people_id):
-    # request_data = request.json
-    # print(request_data)
-    #¿tiene que ir los datos de la tabla de user? 
-    # metodo para filtrar el usuairo
-    user = User.query.first()
-    new_favorito = Favoritos(user_id=user.id,personajes_id=people_id)
+    data = request.get_json()
+    user_id = data.get('user_id')
+
+    if not user_id:
+     return jsonify({"msg": "No User send "}), 404
+
+    user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar()
+    
+    if not user:
+     return jsonify({"error": "Usuario no encontrado"}), 404
+       
+
+    new_favorito = Favoritos(user_id=user_id,personajes_id=people_id)
     db.session.add(new_favorito)
     db.session.commit()
 
@@ -184,7 +197,7 @@ def añadir_favorito_personaje(people_id):
 
     ##### DELETE planeta favorito
 @app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
-def delete_user(planet_id):
+def delete_planet(planet_id):
 
     user = db.session.execute(db.select(User).filter_by(id=id)).scalar_one()
     # hacer filtrado
@@ -219,3 +232,8 @@ def delete_user(people_id):
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
+
+
+
+
+

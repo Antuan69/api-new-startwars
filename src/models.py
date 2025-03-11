@@ -75,3 +75,13 @@ class Favoritos(db.Model):
 
     user_id = mapped_column(Integer, ForeignKey("user.id"), nullable = False)
     user = relationship("User", back_populates = "favoritos")
+     
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "personajes_id": self.personajes_id,
+            "planeta_id": self.planeta_id,
+            "personaje": self.personaje.nombre if self.personaje else None,  # Nombre del personaje si existe
+            "planeta": self.planeta.nombre if self.planeta else None  # Nombre del planeta si existe
+        } 
